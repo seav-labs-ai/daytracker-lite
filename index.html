@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kid Day Tracker</title>
+    <meta name="description" content="Demo daily care dashboard">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Favicon: Boy emoji -->
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👦</text></svg>">
+    <link rel="apple-touch-icon" href="icon-180.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+</head>
+
+<body>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay hidden">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">Loading...</p>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- PWA Install Banner -->
+    <div id="installBanner" class="install-banner hidden">
+        <span>📲 Add to Home Screen for the best experience!</span>
+        <div class="install-actions">
+            <button onclick="installPWA()" class="install-btn">Install</button>
+            <button onclick="dismissInstall()" class="dismiss-btn">✕</button>
+        </div>
+    </div>
+
+    <div id="app">
+        <!-- Top Bar -->
+        <header class="top-bar">
+            <button class="dark-toggle" onclick="toggleDarkMode()" aria-label="Toggle dark mode">
+                <span id="darkModeIcon">🌙</span>
+            </button>
+            <button class="date-arrow" onclick="changeDate(-1)" aria-label="Previous day">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+            </button>
+            <div class="date-selector" onclick="openDatePicker()">
+                <span id="displayDate" class="current-date"></span>
+                <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+            </div>
+            <button class="date-arrow" onclick="changeDate(1)" aria-label="Next day">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+            </button>
+            <button id="todayBtn" class="today-btn hidden" onclick="jumpToToday()" aria-label="Go to today">
+                Today
+            </button>
+            <span id="syncStatus" class="sync-status" title="Cloud sync status">☁️</span>
+            <button class="refresh-btn" onclick="forceRefresh()" aria-label="Refresh">
+                🔄
+            </button>
+        </header>
+
+        <!-- Week at a Glance -->
+        <div id="weekGlance" class="week-glance">
+            <!-- Populated by JS -->
+        </div>
+
+        <!-- Food Day Banner -->
+        <section id="foodBanner" class="food-banner">
+            <div class="food-banner-content">
+                <span id="foodEmoji" class="food-emoji"></span>
+                <div class="food-info">
+                    <h2 id="foodDayName"></h2>
+                    <p id="foodCategories" class="food-categories"></p>
+                </div>
+            </div>
+            <button class="expand-btn" onclick="toggleFoodDetail()">
+                <svg id="expandIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+            </button>
+        </section>
+
+        <!-- Prep Milk Reminder -->
+        <div id="prepMilkReminder" class="prep-milk-reminder">
+            <span>🥛 Prep milk for tomorrow: <span id="prepMilkName" class="milk-name-link"
+                    onclick="openMilkRecipe()"></span></span>
+            <div class="prep-milk-actions">
+                <button class="edit-schedule-btn" onclick="openFoodEditor()">Edit Day</button>
+                <button class="edit-schedule-btn" onclick="openScheduleEditor()">Schedule</button>
+                <button class="edit-schedule-btn sync-btn" onclick="syncDataToCloud()">☁️ Sync</button>
+                <button class="edit-schedule-btn" onclick="clearLocalData()" style="background:#ff6b6b;color:white;">🗑️
+                    Clear</button>
+            </div>
+        </div>
+
+        <!-- Expandable Food Details -->
+        <section id="foodDetails" class="food-details hidden">
+            <div id="mealsGrid" class="meals-grid"></div>
+        </section>
+
+        <!-- Pattern Alerts -->
+        <div id="patternAlerts" class="pattern-alerts hidden">
+            <!-- Populated by JS -->
+        </div>
+
+        <!-- Main Grid -->
+        <main class="main-grid">
+            <!-- Medicines Section -->
+            <section class="section medicines-section">
+                <div class="section-header">
+                    <h3>Medicines</h3>
+                    <button class="text-btn" onclick="openMedicineEditor()">Edit</button>
+                </div>
+                <div class="time-blocks">
+                    <div class="time-block" id="amBlock">
+                        <div class="time-label">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="5"></circle>
+                                <line x1="12" y1="1" x2="12" y2="3"></line>
+                                <line x1="12" y1="21" x2="12" y2="23"></line>
+                                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                                <line x1="1" y1="12" x2="3" y2="12"></line>
+                                <line x1="21" y1="12" x2="23" y2="12"></line>
+                                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                            </svg>
+                            AM
+                        </div>
+                        <div id="amMeds" class="med-pills"></div>
+                    </div>
+
+                    <div class="time-block" id="eveningBlock">
+                        <div class="time-label">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                            </svg>
+                            EVE
+                        </div>
+                        <div id="eveningMeds" class="med-pills"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Behaviors Section -->
+            <section class="section behavior-section">
+                <div class="section-header">
+                    <h3>⭐ Behavior Tags</h3>
+                </div>
+                <!-- Rendered Behavior Rows -->
+                <div id="behaviorContainer" class="behavior-container"></div>
+            </section>
+
+            <!-- Avoid Lists Section -->
+            <section class="section avoid-section">
+                <div class="section-header">
+                    <h3>🚫 Avoid Lists</h3>
+                </div>
+                <div class="avoid-grid">
+                    <!-- Supplements Avoid Box -->
+                    <div class="avoid-box supplements-box">
+                        <div class="avoid-header">Avoid Supplements</div>
+                        <ul class="avoid-list">
+                            <li>Energy Drinks</li>
+                            <li>Excessive Caffeine</li>
+                            <li>Artificial Sweeteners</li>
+                            <li>High Sodium Foods</li>
+                            <li>Fried Foods</li>
+                            <li>Sugary Drinks</li>
+                            <li>Fast Food</li>
+                            <li>Processed Meats</li>
+                            <li>Trans Fats</li>
+                            <li>Heavy Meals before Bed</li>
+                            <li>Late Night Snacks</li>
+                        </ul>
+                    </div>
+                    <!-- Foods Avoid Box -->
+                    <div class="avoid-box foods-box">
+                        <div class="avoid-header">Avoid Foods</div>
+                        <ul class="avoid-list">
+                            <li>Artificial Flavors</li>
+                            <li>Preservatives</li>
+                            <li>Excessive Sugar</li>
+                            <li>Heavy Carbohydrates</li>
+                            <li>Ultra-processed items</li>
+                            <li>Food Coloring</li>
+                            <li>Syrups and Concentrates</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sleep Quality Section -->
+            <section class="section sleep-section">
+                <div class="section-header compact">
+                    <h3>😴 Sleep Quality</h3>
+                    <div id="sleepButtons" class="sleep-buttons">
+                        <button class="sleep-btn" data-quality="good" onclick="setSleep('good')">
+                            😴 Good
+                        </button>
+                        <button class="sleep-btn bad" data-quality="bad" onclick="setSleep('bad')">
+                            😫 Bad
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Bowel Log Section -->
+            <section class="section bowel-section">
+                <div class="section-header compact">
+                    <h3>🚽 Potty Tracker</h3>
+                    <div class="potty-buttons">
+                        <button class="potty-btn" onclick="quickLogPotty('normal')">
+                            ✅ Good
+                        </button>
+                        <button class="potty-btn soft" onclick="quickLogPotty('soft')">
+                            ⚠️ Soft
+                        </button>
+                        <button class="potty-btn wet" onclick="quickLogPotty('wet')">
+                            ❌ Wet
+                        </button>
+                    </div>
+                </div>
+                <div class="potty-custom-time">
+                    <span class="custom-time-label">Add with time:</span>
+                    <input type="time" id="pottyTimeInput" class="time-input">
+                    <button class="potty-btn-small" onclick="logPottyWithTime('normal')">✅</button>
+                    <button class="potty-btn-small soft" onclick="logPottyWithTime('soft')">⚠️</button>
+                    <button class="potty-btn-small wet" onclick="logPottyWithTime('wet')">❌</button>
+                </div>
+                <div id="bowelLog" class="bowel-log"></div>
+            </section>
+
+            <!-- Daily Notes Section -->
+            <section class="section notes-section">
+                <div class="section-header">
+                    <h3>📝 Notes</h3>
+                    <span id="notesSaveStatus" class="save-status"></span>
+                </div>
+                <textarea id="dailyNotes" class="daily-notes-input" placeholder="Add notes for this day..."
+                    oninput="saveDailyNotes()"></textarea>
+            </section>
+
+            <!-- Growth Tracking Section -->
+            <section class="section growth-section">
+                <div class="section-header">
+                    <h3>📏 Growth</h3>
+                    <button class="text-btn" onclick="openGrowthModal()">Log</button>
+                </div>
+                <div id="latestGrowth" class="growth-display">
+                    <span class="growth-empty">Tap "Log" to track weight & height</span>
+                </div>
+            </section>
+        </main>
+
+        <!-- AI Insights -->
+        <section class="ai-insights-section">
+            <div class="ai-insights-header">
+                <span class="ai-insights-title">🤖 AI Insights</span>
+                <button class="ai-refresh-btn" onclick="requestAIAnalysis()">Refresh</button>
+            </div>
+            <div id="aiInsightsContent" class="ai-insights-content">
+                Tap "Refresh" to get AI-powered insights about Demo patterns.
+            </div>
+        </section>
+
+        <!-- Visual Timeline -->
+        <section id="visualTimeline" class="visual-timeline"></section>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <button class="nav-item active" data-view="today">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                <span>Today</span>
+            </button>
+            <button class="nav-item" onclick="changeDate(-1)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+                <span>Prev</span>
+            </button>
+            <button class="nav-item fab-trigger" onclick="quickAction()">
+                <div class="fab-icon">+</div>
+            </button>
+            <button class="nav-item" onclick="changeDate(1)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+                <span>Next</span>
+            </button>
+            <button class="nav-item" onclick="generateWeeklyReport()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                </svg>
+                <span>Report</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- Bowel Modal -->
+    <div id="bowelModal" class="modal hidden">
+        <div class="modal-backdrop" onclick="closeBowelModal()"></div>
+        <div class="modal-sheet">
+            <div class="modal-handle"></div>
+            <h3 class="modal-title">Log Potty</h3>
+            <div class="bowel-options">
+                <button class="bowel-option" data-type="normal" onclick="selectBowelType('normal')">
+                    <span class="option-emoji">✅</span>
+                    <span class="option-label">Good (Normal)</span>
+                </button>
+                <button class="bowel-option soft" data-type="soft" onclick="selectBowelType('soft')">
+                    <span class="option-emoji">⚠️</span>
+                    <span class="option-label">Soft (Ok)</span>
+                </button>
+                <button class="bowel-option warning" data-type="wet" onclick="selectBowelType('wet')">
+                    <span class="option-emoji">❌</span>
+                    <span class="option-label">Wet (Bad)</span>
+                </button>
+            </div>
+            <div id="noteInput" class="note-input hidden">
+                <label>Notes</label>
+                <textarea id="bowelNote" placeholder="Describe the issue..."></textarea>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-ghost" onclick="closeBowelModal()">Cancel</button>
+                <button id="submitBowel" class="btn-primary" onclick="saveBowel()" disabled>Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Medicine Editor Modal -->
+    <div id="medicineModal" class="modal hidden">
+        <div class="modal-backdrop" onclick="closeMedicineEditor()"></div>
+        <div class="modal-sheet modal-sheet-full">
+            <div class="modal-handle"></div>
+            <h3 class="modal-title">Edit Medicines for <span id="medEditDate"></span></h3>
+            <div id="medicineForm" class="medicine-form"></div>
+            <div class="modal-actions">
+                <button class="btn-ghost" onclick="closeMedicineEditor()">Cancel</button>
+                <button class="btn-primary" onclick="saveMedicines()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Food Day Editor Modal -->
+    <div id="foodEditorModal" class="modal hidden">
+        <div class="modal-backdrop" onclick="closeFoodEditor()"></div>
+        <div class="modal-sheet modal-sheet-full">
+            <div class="modal-handle"></div>
+            <h3 class="modal-title">Edit <span id="foodEditDayName"></span></h3>
+            <p class="modal-subtitle">Changes will apply permanently to this day</p>
+            <div id="foodEditorForm" class="food-editor-form"></div>
+            <div class="modal-actions">
+                <button class="btn-ghost" onclick="closeFoodEditor()">Cancel</button>
+                <button class="btn-primary" onclick="saveFoodDay()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Action Menu -->
+    <div id="quickMenu" class="quick-menu hidden">
+        <div class="quick-menu-backdrop" onclick="closeQuickMenu()"></div>
+        <div class="quick-menu-content">
+            <button onclick="quickBowel('normal')">✅ Good Potty</button>
+            <button onclick="quickBowel('soft')">⚠️ Soft Potty</button>
+            <button onclick="quickBowel('wet')">❌ Wet Potty (with note)</button>
+            <button onclick="openMedicineEditor()">💊 Edit Medicines</button>
+        </div>
+    </div>
+
+    <!-- History/Trends Modal -->
+    <div id="historyModal" class="modal hidden">
+        <div class="modal-backdrop" onclick="closeHistory()"></div>
+        <div class="modal-sheet modal-sheet-full">
+            <div class="modal-handle"></div>
+            <div class="modal-tabs">
+                <button class="tab-btn active" onclick="showHistoryTab('history')">📋 History</button>
+                <button class="tab-btn" onclick="showHistoryTab('trends')">📊 Trends</button>
+            </div>
+
+            <!-- History Tab -->
+            <div id="historyTab" class="tab-content">
+                <div id="historyContent" class="history-content"></div>
+            </div>
+
+            <!-- Trends Tab -->
+            <div id="trendsTab" class="tab-content hidden">
+                <p class="trends-intro">Patterns by food day (last 30 days)</p>
+                <div id="trendsContent" class="trends-content"></div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn-ghost" onclick="exportDataCSV()">📥 Export CSV</button>
+                <button class="btn-primary" onclick="closeHistory()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Date Picker Modal -->
+    <div id="datePickerModal" class="modal hidden">
+        <div class="modal-backdrop" onclick="closeDatePicker()"></div>
+        <div class="modal-sheet">
+            <div class="modal-handle"></div>
+            <h3 class="modal-title">📅 Select Date</h3>
+            <div class="date-picker-content">
+                <input type="date" id="datePickerInput" class="date-picker-input">
+                <div class="date-quick-buttons">
+                    <button class="btn-ghost" onclick="goToToday()">Today</button>
+                    <button class="btn-ghost" onclick="goToYesterday()">Yesterday</button>
+                    <button class="btn-ghost" onclick="goToTomorrow()">Tomorrow</button>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-ghost" onclick="closeDatePicker()">Cancel</button>
+                <button class="btn-primary" onclick="confirmDatePicker()">Go to Date</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Food Schedule Editor Modal -->
+    <div id="scheduleModal" class="modal hidden">
+        <div class="modal-backdrop" onclick="closeScheduleEditor()"></div>
+        <div class="modal-sheet modal-sheet-full">
+            <div class="modal-handle"></div>
+            <h3 class="modal-title">📅 Edit Food Schedule</h3>
+            <p class="schedule-intro">Tap a day to change or skip it</p>
+            <div id="scheduleGrid" class="schedule-grid"></div>
+            <div class="modal-actions">
+                <button class="btn-ghost" onclick="closeScheduleEditor()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Day Override Picker Modal -->
+    <div id="dayOverrideModal" class="modal hidden">
+        <div class="modal-backdrop" onclick="closeDayOverride()"></div>
+        <div class="modal-sheet">
+            <div class="modal-handle"></div>
+            <h3 class="modal-title">Change <span id="overrideDateDisplay"></span></h3>
+            <div class="override-options">
+                <button class="override-btn m1" onclick="setDayOverride(1)">🍽️ Menu A</button>
+                <button class="override-btn m2" onclick="setDayOverride(2)">🥗 Menu B</button>
+                <button class="override-btn m3" onclick="setDayOverride(3)">🥙 Menu C</button>
+                <button class="override-btn m4" onclick="setDayOverride(4)">🥩 Menu D</button>
+                <button class="override-btn skip" onclick="setDayOverride(0)">⏭️ Skip Day</button>
+                <button class="override-btn reset" onclick="clearDayOverride()">🔄 Reset to Default</button>
+            </div>
+            <label class="resume-checkbox">
+                <input type="checkbox" id="resumeNormalSchedule" checked>
+                <span>Resume normal schedule after this day</span>
+            </label>
+            <div class="modal-actions">
+                <button class="btn-ghost" onclick="closeDayOverride()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Milk Recipe Modal -->
+    <div id="milkRecipeModal" class="modal hidden">
+        <div class="modal-backdrop" onclick="closeMilkRecipe()"></div>
+        <div class="modal-sheet">
+            <div class="modal-handle"></div>
+            <h3 class="modal-title">🥛 <span id="milkRecipeName"></span> Recipe</h3>
+            <div class="milk-recipe-content">
+                <textarea id="milkRecipeText" class="milk-recipe-textarea"
+                    placeholder="Add recipe instructions here..."></textarea>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-ghost" onclick="closeMilkRecipe()">Cancel</button>
+                <button class="btn-primary" onclick="saveMilkRecipe()">Save Recipe</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Growth Tracking Modal -->
+    <div id="growthModal" class="modal hidden">
+        <div class="modal-backdrop" onclick="closeGrowthModal()"></div>
+        <div class="modal-sheet">
+            <div class="modal-handle"></div>
+            <h3 class="modal-title">📏 Log Growth</h3>
+            <div class="growth-form">
+                <div class="growth-input-row">
+                    <label>Weight (lbs)</label>
+                    <input type="number" id="growthWeight" step="0.1" placeholder="e.g., 28.5">
+                </div>
+                <div class="growth-input-row">
+                    <label>Height (inches)</label>
+                    <input type="number" id="growthHeight" step="0.25" placeholder="e.g., 34.5">
+                </div>
+                <div class="growth-input-row">
+                    <label>Date</label>
+                    <input type="date" id="growthDate">
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-ghost" onclick="closeGrowthModal()">Cancel</button>
+                <button class="btn-primary" onclick="saveGrowth()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supabase CDN (for cloud sync) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- App Scripts (load first) -->
+    <script src="i18n.js?v=31"></script>
+    <script src="data.js?v=31"></script>
+    <script src="utils.js?v=31"></script>
+    <script src="supabase.js?v=31"></script>
+    <script src="app.js?v=31"></script>
+
+    <!-- Remove old service worker and clear cache -->
+    <script>
+        // Unregister any existing service workers and clear caches
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(registrations => {
+                registrations.forEach(registration => {
+                    registration.unregister();
+                    console.log('🗑️ Service Worker unregistered');
+                });
+            });
+            // Clear all caches
+            if ('caches' in window) {
+                caches.keys().then(names => {
+                    names.forEach(name => caches.delete(name));
+                });
+            }
+        }
+
+        // ONE-TIME CLEANUP: Remove test data from Dec 28, 2025
+        // This runs once per device to clean up test entries
+        if (!localStorage.getItem('cleanup_v14_done')) {
+            console.log('🧹 Running one-time cleanup of Dec 28 test entries...');
+
+            // Clear bowel entries for Dec 28
+            try {
+                const bowelData = JSON.parse(localStorage.getItem('demo_bowel') || '{}');
+                if (bowelData['2025-12-28']) {
+                    delete bowelData['2025-12-28'];
+                    localStorage.setItem('demo_bowel', JSON.stringify(bowelData));
+                    console.log('✅ Cleared Dec 28 bowel entries');
+                }
+            } catch (e) {
+                console.error('Cleanup error:', e);
+            }
+
+            localStorage.setItem('cleanup_v14_done', 'true');
+            console.log('✅ One-time cleanup complete');
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Prototype folders (not needed for production)
+prototype-a/
+prototype-b/
+prototype-c/
+shared/
+
+# Temp files
+*.log
+*.tmp
+index.html.new
+.vercel

@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Food Rotation - Print Reference</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+            font-size: 28px;
+        }
+
+        .print-btn {
+            display: block;
+            margin: 0 auto 30px;
+            padding: 12px 30px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .print-btn:hover {
+            background: #1976D2;
+        }
+
+        .days-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .day-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            page-break-inside: avoid;
+        }
+
+        .day-header {
+            padding: 20px;
+            color: white;
+            text-align: center;
+        }
+
+        .day-header h2 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .day-header .emoji {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .day-content {
+            padding: 20px;
+        }
+
+        .category {
+            display: flex;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .category:last-child {
+            border-bottom: none;
+        }
+
+        .category-label {
+            font-weight: 600;
+            width: 140px;
+            flex-shrink: 0;
+            color: #666;
+        }
+
+        .category-value {
+            flex: 1;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .allowed-foods {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid #eee;
+        }
+
+        .allowed-foods h4 {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .allowed-foods p {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        /* Day-specific colors */
+        .day-1 .day-header {
+            background: linear-gradient(135deg, #4CAF50, #81C784);
+        }
+
+        .day-2 .day-header {
+            background: linear-gradient(135deg, #FFC107, #FFD54F);
+        }
+
+        .day-3 .day-header {
+            background: linear-gradient(135deg, #9C27B0, #BA68C8);
+        }
+
+        .day-4 .day-header {
+            background: linear-gradient(135deg, #2196F3, #64B5F6);
+        }
+
+        /* Print styles */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .print-btn {
+                display: none;
+            }
+
+            h1 {
+                font-size: 22px;
+                margin-bottom: 15px;
+            }
+
+            .days-grid {
+                gap: 15px;
+            }
+
+            .day-card {
+                box-shadow: none;
+                border: 1px solid #ddd;
+            }
+
+            .day-header {
+                padding: 12px;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .day-header .emoji {
+                font-size: 32px;
+            }
+
+            .day-header h2 {
+                font-size: 18px;
+            }
+
+            .day-content {
+                padding: 12px;
+            }
+
+            .category {
+                padding: 6px 0;
+            }
+
+            .category-label {
+                width: 100px;
+                font-size: 12px;
+            }
+
+            .category-value {
+                font-size: 12px;
+            }
+
+            .allowed-foods {
+                margin-top: 10px;
+                padding-top: 10px;
+            }
+
+            .allowed-foods h4 {
+                font-size: 11px;
+            }
+
+            .allowed-foods p {
+                font-size: 11px;
+            }
+        }
+
+        @page {
+            size: letter;
+            margin: 0.5in;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🍽️ Demo Food Rotation</h1>
+
+        <button class="print-btn" onclick="window.print()">🖨️ Print This Page</button>
+
+        <div class="days-grid">
+            <!-- Day 1: Chicken -->
+            <div class="day-card day-1">
+                <div class="day-header">
+                    <span class="emoji">🍗</span>
+                    <h2>Day 1: Chicken</h2>
+                </div>
+                <div class="day-content">
+                    <div class="category">
+                        <span class="category-label">🥩 Protein</span>
+                        <span class="category-value">Chicken</span>
+                    </div>
+                    <div class="category">
+                        <span class="category-label">🍠 Starch</span>
+                        <span class="category-value">Sweet Potato</span>
+                    </div>
+                    <div class="category">
+                        <span class="category-label">🍉 Fruit</span>
+                        <span class="category-value">Watermelon + Honeydew</span>
+                    </div>
+                    <div class="category">
+                        <span class="category-label">🥦 Vegetable</span>
+                        <span class="category-value">Cauliflower</span>
+                    </div>
+                    <div class="category">
+                        <span class="category-label">🥛 Milk</span>
+                        <span class="category-value">Coconut Milk</span>
+                    </div>
+                    <div class="category">
+                        <span class="category-label">🧈 Fat</span>
+                        <span class="category-value">Coconut Oil</span>
+                    </div>
+                    <div class="category">
+                        <span class="category-label">🍚 Cook Starch</span>
+                        <span class="category-value">Arrowroot</span>
+                    </div>
+                    <div class="category">
+                        <span class="category-label">🍯 Sugar</span>
+                        <span class="category-value">Coconut Sugar</span>
+                    </div>
+                    <div class="allowed-foods">
+                        <h4>All Allowed Foods</h4>
+                        <p>chicken, sweet potato, coconut oil, coconut milk, watermelon, honeydew, cauliflower,
+                            arrowroot, coconut sugar, cocoa</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Day 2: Beef -->
+            <div class="day-card day-2">
+                <div class="day-header">
+                    <span class="emoji">🥩</span>
+                    <h2>Day 2: Beef</h2>
+                </div>
+                <div class="day-content">
+                    <div class="category">
+                        <span class="category-label">🥩 Protein</span>
+                        <span class="category-value">Beef + Egg</span>
+                    </div>
+                    <div class="category">
+                        <span class="category-label">🍠 Starch</span>
+                        <span class="category-value">Plantain</span>
+                    </div>
+                    <div class="category">
+                        <span class="category-label">🍉 Fruit</span>
+                        <span class="category-value">Banana + Citrus</span>
+                    </div>
+                    <div class="category">
+                        <span class="category-label">🥦 Vegetable</span>
+                        <span class="category-value">Peas + Tomato</span>
+                    </div>
+                    <div class="category">
+                        <span class="category-label">🥛 Milk</span>
+                        <span class="category-value">Rice Milk</span>
+                    </div>
+                    <div class="category">
+                        <span class="category-label">🧈 Fat</span>
+                        <span class="category-value">Beef Tallow</span>
+                    </div>
+                    <div class="category">
+                        <span class="category-label">🍚 Cook Starch</span>
+                        <span class="category-value">Rice Flour</span>
+                    </div>
+                    <div class="category">
+                        <span class="category-label">🍯 Sugar</span>
+                        <span class="category-value">Maple Syrup</span>
+                    </div>
+                    <div class="allowed-foods">
+                        <h4>All Allowed Foods</h4>
+                        <p>beef, egg, plantain, beef tallow, rice milk, banana, clementine, orange, peas, tomato, rice
+                            flour,
+                            maple syrup</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Day 3: Turkey -->
+            <div class="day-card day-3">
+                <div class="day-header">
+                    <span class="emoji">🦃</span>
+                    <h2>Day 3: Turkey</h2>
+                </div>
+                <div class="day-content">
+                    <div class="category">
+                        <span class="category-label">🥩 Protein</span>
+                        <span class="category-value">Turkey</span>
+                    </div>
+                    <div class="category">
+                        <span class="category-label">🍠 Starch</span>
+                        <span class="category-value">Pumpkin / Potato</span>
+                    </div>
+                    <div class="category">
+                        <span class="category-label">🍉 Fruit</span>
+                        <span class="category-value">Strawberry + Raspberry</span>
+                    </div>
+                    <div class="category">
+                        <span class="category-label">🥦 Vegetable</span>
+                        <span class="category-value">Zucchini</span>
+                    </div>
+                    <div class="category">
+                        <span class="category-label">🥛 Milk</span>
+                        <span class="category-value">Potato Milk</span>
+                    </div>
+                    <div class="category">
+                        <span class="category-label">🧈 Fat</span>
+                        <span class="category-value">Duck Fat</span>
+                    </div>
+                    <div class="category">
+                        <span class="category-label">🍚 Cook Starch</span>
+                        <span class="category-value">Potato Starch</span>
+                    </div>
+                    <div class="category">
+                        <span class="category-label">🍯 Sugar</span>
+                        <span class="category-value">Honey</span>
+                    </div>
+                    <div class="allowed-foods">
+                        <h4>All Allowed Foods</h4>
+                        <p>turkey, pumpkin, potato, duck fat, potato milk, strawberry, raspberry, zucchini, potato
+                            starch, honey</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Day 4: Pork -->
+            <div class="day-card day-4">
+                <div class="day-header">
+                    <span class="emoji">🐷</span>
+                    <h2>Day 4: Pork</h2>
+                </div>
+                <div class="day-content">
+                    <div class="category">
+                        <span class="category-label">🥩 Protein</span>
+                        <span class="category-value">Pork / Ham</span>
+                    </div>
+                    <div class="category">
+                        <span class="category-label">🍠 Starch</span>
+                        <span class="category-value">Cassava</span>
+                    </div>
+                    <div class="category">
+                        <span class="category-label">🍉 Fruit</span>
+                        <span class="category-value">Apple + Pear</span>
+                    </div>
+                    <div class="category">
+                        <span class="category-label">🥦 Vegetable</span>
+                        <span class="category-value">Carrot</span>
+                    </div>
+                    <div class="category">
+                        <span class="category-label">🥛 Milk</span>
+                        <span class="category-value">Cassava Milk</span>
+                    </div>
+                    <div class="category">
+                        <span class="category-label">🧈 Fat</span>
+                        <span class="category-value">Olive Oil</span>
+                    </div>
+                    <div class="category">
+                        <span class="category-label">🍚 Cook Starch</span>
+                        <span class="category-value">Tapioca</span>
+                    </div>
+                    <div class="category">
+                        <span class="category-label">🍯 Sugar</span>
+                        <span class="category-value">Agave Syrup</span>
+                    </div>
+                    <div class="allowed-foods">
+                        <h4>All Allowed Foods</h4>
+                        <p>pork, ham, cassava, olive oil, cassava milk, apple, pear, carrot, tapioca, agave</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
